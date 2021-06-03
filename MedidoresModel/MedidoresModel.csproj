@@ -41,9 +41,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DAL\IMensajesDAL.cs" />
-    <Compile Include="DAL\MensajeDALArchivos.cs" />
-    <Compile Include="DTO\Mensaje.cs" />
+    <Compile Include="DAL\ILecturaDAL.cs" />
+    <Compile Include="DAL\IMedidorDAL.cs" />
+    <Compile Include="DAL\LecturaDALArchivos.cs" />
+    <Compile Include="DAL\MedidorDALObjetos.cs" />
+    <Compile Include="DTO\Lectura.cs" />
+    <Compile Include="DTO\Medidor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

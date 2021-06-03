@@ -14,7 +14,7 @@ namespace Medidores.Comunicacion
 {
     public class HebraServidor
     {
-        private IMensajesDAL mensajesDAL = MensajeDALArchivos.GetInstancia();
+        private ILecturaDAL mensajesDAL = LecturaDALArchivos.GetInstancia();
         public void Ejecutar()
         {
             int puerto = Convert.ToInt32(ConfigurationManager.AppSettings["puerto"]);
@@ -23,9 +23,9 @@ namespace Medidores.Comunicacion
             {
                 while (true)
                 {
-                    Console.WriteLine("Esperando Cliente...");
+                    Console.WriteLine("Esperando Lectura Medidor...");
                     Socket cliente = servidor.ObtenerCliente();
-                    Console.WriteLine("Cliente recibido");
+                    Console.WriteLine("OK");
                     ClienteCom clienteCom = new ClienteCom(cliente);
 
                     HebraCliente clienteThread = new HebraCliente(clienteCom);

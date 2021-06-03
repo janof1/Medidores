@@ -12,7 +12,8 @@ namespace Medidores.Comunicacion
     class HebraCliente
     {
         private ClienteCom clienteCom;
-        private IMensajesDAL mensajesDAL = MensajeDALArchivos.GetInstancia();
+        private ILecturaDAL lecturaDAL = LecturaDALArchivos.GetInstancia();
+        private IMedidorDAL medidorDAL = MedidorDALObjetos.GetInstancia();
 
         public HebraCliente(ClienteCom clienteCom)
         {
@@ -21,26 +22,63 @@ namespace Medidores.Comunicacion
 
         public void Ejecutar()
         {
-            clienteCom.Escribir("Ingrese Nro Medidor: ");
-            int nromedidor = Convert.ToInt32(clienteCom.Leer());
-            clienteCom.Escribir(DateTime.Now.ToString("yyyy-MM-dd-HH-mmm-ss"));
-            string fecha = DateTime.Now.ToString("yyyy-MM-dd-HH-mmm-ss");
-            clienteCom.Escribir("Ingrese Valor Consumo: ");
-            decimal valorconsumo = Convert.ToDecimal(clienteCom.Leer());
+            clienteCom.Escribir("Ingrese Lectura Medidor");
+            string texto = clienteCom.Leer();
+            string[] textoArr = texto.Trim().Split('|');//separo por pipe la lectura 1111|2021-06-03 03:03:00|65,5
+            int nromedidor = Convert.ToInt32(textoArr[0]);//medidor
+            //validar que medidor exista
+            bool esValido;
+            bool existe ;
+            List<Lectura> lst = lecturaDAL.FiltrarLecturas(nromedidor);
+            do
+            {                
+                esValido = int.TryParse(textoArr[0], out nromedidor);
+                if (lst.Count() > 0) //encontro el medidor
+                {
+                    esValido = true;
+                    existe = true;
+                }
+                else //no encontro el medidor
+                {
+                    clienteCom.Escribir("Medidor no Registrado en Sistema");
+                    clienteCom.Desconectar();
+                    existe = false;
+                }
+            } while (!esValido);
 
-            Mensaje mensaje = new Mensaje()
+            if (existe)//si existe graba el registro en el medidor
             {
-                NroMedidor = nromedidor,
-                Fecha = fecha,
-                ValorConsumo = (decimal)valorconsumo
-            };
+                DateTime fecha = Convert.ToDateTime(textoArr[1]);//fecha formato yyyy-MM-dd HH:mmm:ss
+                decimal valor = Convert.ToDecimal(textoArr[2]);//valor
 
-            lock (mensajesDAL)
-            {
-                mensajesDAL.AgregarMensaje(mensaje);
+                //instancio clase lectura para heredad atributos
+                Lectura lectura = new Lectura()
+                {//asigno las variables
+                    NroMedidor = nromedidor,
+                    Fecha = fecha,
+                    Valor = valor
+                };
+
+                lock (lecturaDAL)
+                {
+                    lecturaDAL.IngresarLectura(lectura);
+                }
+
+        /*        //instancio clase medidor para heredad atributos
+                Medidor medi = new Medidor()
+                {//asigno las variables
+                    NroMedidor = nromedidor,
+                    Fecha = fecha,
+                    Valor = valor
+                };
+
+                lock (medidorDAL)
+                {
+                    medidorDAL.IngresarMedidor(medi);
+                }
+        */
+                clienteCom.Desconectar();
             }
-
-            clienteCom.Desconectar();
         }
     }
 }

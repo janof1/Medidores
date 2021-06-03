@@ -15,84 +15,109 @@ namespace Medidores
 {
     class Program
     {
-        private static IMensajesDAL mensajesDAL = MensajeDALArchivos.GetInstancia();
+        private static ILecturaDAL lecturaDAL = LecturaDALArchivos.GetInstancia();
+        private static IMedidorDAL medidorDAL = MedidorDALObjetos.GetInstancia();
+        private static ClienteCom clienteCom;
+        private static bool continuar = true;
         static bool Menu()
         {
-            bool continuar = true;
-            Console.WriteLine("Bienvenido al Mensajero");
+
+            Console.WriteLine("Bienvenido a lectura de Medidores");
             Console.WriteLine("1. Ingresar \n 2. Mostrar \n 0. Salir");
             switch (Console.ReadLine().Trim())
             {
-                case "1": Ingresar();
+                case "1":
+                    Ingresar();
                     break;
-                case "2": Mostrar();
+                case "2":
+                    Mostrar();
                     break;
-                case "0": continuar = false;
+                case "0":
+                    continuar = false;
                     break;
-                default: Console.WriteLine("Ingrese nuevamente");
+                default:
+                    Console.WriteLine("Ingrese nuevamente");
                     break;
             }
             return continuar;
-
         }
-             
+
         static void Main(string[] args)
         {
             //1. Iniciar el Servidor Socket en el puerto 3000
             //2. El puerto tiene que ser configurable en el App.Config
             //3. cuando reciba un cliente, tiene que solicitar a ese cliente el 
-            //nombre y el texto, y agregar un nuevo mensaje con el tipo TCP.
-            // IniciarServidor();
+            //nromedidor, fecha, valorconsumo, y agregar un nuevo medidor con el tipo TCP.
 
             HebraServidor hebra = new HebraServidor();
-            //hebra.Ejecutar();
             Thread t = new Thread(new ThreadStart(hebra.Ejecutar));
             t.IsBackground = true;
             t.Start();
             while (Menu()) ;
-            
-            //proxima Clase;
-            //1. ¿Ateder mas de un cliente a la vez?
-            //2. ¿Evitar que dos clientes ingresen al archivo a la vez?
-            //3. ¿evitar el bloqueo mutuo?
-
-            /// 
-
         }
 
         static void Ingresar()
         {
-            Console.WriteLine("Ingrese Nro Medidor: ");
-            int nromedidor = Convert.ToInt32(Console.ReadLine().Trim());
-            Console.WriteLine(DateTime.Now.ToString("yyyy-MM-dd-HH-mmm-ss"));
-            string fecha = DateTime.Now.ToString("yyyy-MM-dd-HH-mmm-ss");
-            Console.WriteLine("Ingrese Valor Consumo: ");
-            Decimal valorconsumo = Convert.ToDecimal(Console.ReadLine().Trim());
-            Mensaje mensaje = new Mensaje()
+            //declaro variables para recibir los datos
+            int nromedidor;
+            DateTime fecha;
+            decimal valor;
+
+            Console.Clear();
+            Console.WriteLine("Ingreso de Datos");
+            Console.WriteLine("------- -- -----");
+            //valido ingreso de medidor tipo int
+            bool esValido;
+            do
             {
-                NroMedidor = nromedidor,
-                Fecha = fecha,
-                ValorConsumo = valorconsumo
-            };
-            lock (mensajesDAL)
+                Console.WriteLine("Ingrese Nro Medidor: ");
+                esValido = int.TryParse(Console.ReadLine().Trim(), out nromedidor);
+            } while (!esValido);
+
+
+            esValido = false;//inicializo para volver a usar
+            //valido ingreso fecha
+            Console.WriteLine("Formato :" + DateTime.Now.ToString("yyyy-MM-dd HH:mmm:ss"));
+            do
             {
-                mensajesDAL.AgregarMensaje(mensaje);
+                Console.WriteLine("Ingrese Fecha: ");
+                esValido = DateTime.TryParse(Console.ReadLine().Trim(), out fecha);
+            } while (!esValido);
+
+            esValido = false;//inicializo para volver a usar 
+            //valido ingreso valor
+            do
+            {
+                Console.WriteLine("Ingrese Valor Consumo");
+                esValido = Decimal.TryParse(Console.ReadLine().Trim(), out valor);
+            } while (!esValido);
+
+            Lectura lectura = new Lectura();
+            {
+                lectura.NroMedidor = nromedidor;
+                lectura.Fecha = fecha;
+                lectura.Valor = valor;
             }
-            
-
+            lock (lecturaDAL)
+            {
+                lecturaDAL.IngresarLectura(lectura);
+            }
         }
-
         static void Mostrar()
         {
-            List<Mensaje> mensajes = null;
-            lock (mensajesDAL)
+            List<Lectura> lecturas = null;
+            lock (lecturaDAL)
             {
-                mensajes = mensajesDAL.ObtenerMensajes();
+                lecturas = lecturaDAL.ObtenerLecturas();
             }
-            foreach(Mensaje mensaje in mensajes)
+            foreach (Lectura lectura in lecturas)
             {
-                Console.WriteLine(mensaje);
+                Console.WriteLine(lectura);
             }
+
+            Console.ReadKey();//pausa antes de cerrar app
+
+            continuar = false;//cierro aplicacion
         }
     }
 }

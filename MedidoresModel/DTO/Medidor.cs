@@ -6,22 +6,22 @@ using System.Threading.Tasks;
 
 namespace MedidoresModel
 {
-    public class Mensaje
+    public class Medidor
     {
         private int nromedidor;
-        private string fecha;
-        private Decimal valorconsumo;
+        private DateTime fecha;
+        private Decimal valor;
 
         public int NroMedidor { get => nromedidor; set => nromedidor = value; }
-        public string Fecha { get => fecha; set => fecha = value; }
-        public Decimal ValorConsumo{ get => valorconsumo; set => valorconsumo = value; }
+        public DateTime Fecha { get => fecha; set => fecha = value; }
+        public Decimal Valor { get => valor; set => valor = value; }
 
         public override string ToString()
         {
             return nromedidor
-                + " "
-                + fecha + " "
-                + valorconsumo;
+                + "|"
+                + fecha + "|"
+                + valor;
         }
     }
 }

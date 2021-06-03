@@ -47,8 +47,6 @@ namespace ServidorSocketUtils
             }
         }
 
-
-
         public void Desconectar()
         {
             try
@@ -56,7 +54,6 @@ namespace ServidorSocketUtils
                 this.cliente.Close();
             }catch(Exception ex)
             {
-
             }
         }
     }
